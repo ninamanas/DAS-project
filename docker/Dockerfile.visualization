@@ -1,0 +1,19 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY visualization_app.py .
+COPY analysis_service.py .
+COPY config.py .
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "visualization_app.py", "--server.port=8501", "--server.address=0.0.0.0"]

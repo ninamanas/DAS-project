@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  postgres:
+    image: postgres:13
+    container_name: postgres 
+    environment:
+      POSTGRES_PASSWORD: "Ninam2003" # Заменете со ваша лозинка
+      POSTGRES_USER: postgres
+      POSTGRES_DB: stock_data
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  spark:
+    image: bitnami/spark:3.3
+    # ... (ostanatiot kako vo prethodniot odgovor)
+    volumes:
+      - ./src:/app  # Sekoj pat koga ke se promeni kodot, Spark ke go vidi
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    # ... (ostanatiot kako vo prethodniot odgovor)
+    depends_on:
+      - kafka
+
+
+  visualization:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.visualization
+    # ... (ostanatiot kako vo prethodniot odgovor)
+    ports:
+      - "8501:8501" 
+    depends_on:
+      - postgres
+    environment:
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
+
+      
+volumes:
+  postgres_data:

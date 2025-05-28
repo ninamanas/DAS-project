@@ -1,7 +1,7 @@
 from confluent_kafka import Producer
 
 # Kafka Settings
-KAFKA_BOOTSTRAP_SERVERS = 'localhost:9092'
+KAFKA_BOOTSTRAP_SERVERS = 'kafka:9092'
 TOPIC_NAME = 'stock_data'
 
 # Create Kafka Producer
